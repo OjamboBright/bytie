@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bytie — Your Coding Pet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --surface: #13151c;
+      --surface2: #1a1d26;
+      --border: #272b38;
+      --border2: #323647;
+      --text: #e8eaf2;
+      --muted: #6b7094;
+      --accent: #7c6fcd;
+      --accent2: #a599e9;
+      --accent-glow: rgba(124, 111, 205, 0.18);
+      --green: #4caf86;
+      --amber: #e8a838;
+      --red: #e85b5b;
+      --teal: #38bcd4;
+      --pink: #d46fa5;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,111,205,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,111,205,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .logo span { color: var(--accent2); }
+
+    .stage-pill {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      transition: all 0.4s ease;
+    }
+
+    .stage-pill.egg    { border-color: #534AB7; color: #a599e9; }
+    .stage-pill.baby   { border-color: #1D9E75; color: #4caf86; }
+    .stage-pill.coder  { border-color: #185FA5; color: #64b5f6; }
+    .stage-pill.dev    { border-color: #BA7517; color: #e8a838; }
+    .stage-pill.senior { border-color: #3B6D11; color: #81c784; }
+    .stage-pill.legend { border-color: #D85A30; color: #ff8a65; }
+
+    /* Sync bar */
+    .sync-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .sync-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .sync-dot.local   { background: var(--amber); }
+    .sync-dot.synced  { background: var(--green); }
+    .sync-dot.syncing { background: var(--accent2); animation: blink 0.8s infinite; }
+    .sync-dot.error   { background: var(--red); }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .sync-text {
+      font-size: 0.72rem;
+      color: var(--muted);
+      flex: 1;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .sync-actions { display: flex; gap: 6px; }
+
+    .icon-btn {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem;
+      transition: all 0.15s;
+    }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent2); }
+    .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: border-color 0.3s;
+    }
+
+    .stat:hover { border-color: var(--border2); }
+
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 6px;
+    }
+
+    .stat-val {
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-sub {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Pet canvas */
+    .pet-wrap {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    #pet-canvas {
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      display: block;
+    }
+
+    .pet-glow {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      filter: blur(30px);
+      pointer-events: none;
+      transition: background 0.5s;
+    }
+
+    /* XP bar */
+    .xp-wrap { margin-bottom: 1.5rem; }
+
+    .xp-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      font-family: 'Space Mono', monospace;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .xp-track {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .xp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Pet message */
+    .pet-msg {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+
+    .pet-msg::before {
+      content: '▲';
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: var(--border);
+    }
+
+    /* Check-in */
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 10px;
+    }
+
+    .checkin-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .checkin-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 14px 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .checkin-btn:hover {
+      border-color: var(--accent);
+      background: var(--surface2);
+      transform: translateY(-2px);
+    }
+
+    .checkin-btn:active { transform: translateY(0); }
+
+    .checkin-btn.active {
+      border-color: var(--accent2);
+      background: rgba(124, 111, 205, 0.12);
+      color: var(--accent2);
+    }
+
+    .checkin-btn.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .btn-icon { font-size: 1.3rem; line-height: 1; }
+    .btn-sub { font-size: 0.65rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+    /* Calendar */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-bottom: 1.5rem;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      transition: all 0.2s;
+    }
+
+    .cal-day.done {
+      background: rgba(124, 111, 205, 0.2);
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+
+    .cal-day.today {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reset-btn {
+      font-size: 0.7rem;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      transition: color 0.2s;
+    }
+
+    .reset-btn:hover { color: var(--red); }
+
+    .last-sync {
+      font-size: 0.65rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Drive modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .modal h3 {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .modal p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .modal-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      margin-bottom: 1rem;
+      outline: none;
+    }
+
+    .modal-input:focus { border-color: var(--accent); }
+
+    .modal-actions { display: flex; gap: 8px; }
+
+    .btn-primary {
+      flex: 1;
+      padding: 10px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+
+    .btn-secondary {
+      padding: 10px 16px;
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 0.78rem;
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 200;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">_Bytie<span>.</span></div>
+    <div class="stage-pill egg" id="stage-pill">Egg</div>
+  </div>
+
+  <!-- Sync bar -->
+  <div class="sync-bar">
+    <div class="sync-dot local" id="sync-dot"></div>
+    <div class="sync-text" id="sync-text">local only</div>
+    <div class="sync-actions">
+      <button class="icon-btn" title="Save to Drive" onclick="openSyncModal('up')" id="btn-up">↑</button>
+      <button class="icon-btn" title="Load from Drive" onclick="openSyncModal('down')" id="btn-down">↓</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">XP</div>
+      <div class="stat-val" id="stat-xp">0</div>
+      <div class="stat-sub">total</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Streak</div>
+      <div class="stat-val" id="stat-streak">0</div>
+      <div class="stat-sub">days</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Hours</div>
+      <div class="stat-val" id="stat-hours">0</div>
+      <div class="stat-sub">total</div>
+    </div>
+  </div>
+
+  <!-- Pet -->
+  <div class="pet-wrap">
+    <div class="pet-glow" id="pet-glow"></div>
+    <canvas id="pet-canvas" width="340" height="220"></canvas>
+  </div>
+
+  <!-- XP bar -->
+  <div class="xp-wrap">
+    <div class="xp-meta">
+      <span id="xp-left">Level 1 — Egg</span>
+      <span id="xp-right">0 / 20 XP</span>
+    </div>
+    <div class="xp-track">
+      <div class="xp-fill" id="xp-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Pet message -->
+  <div class="pet-msg" id="pet-msg">"Check in below to feed me XP and watch me grow!"</div>
+
+  <!-- Check-in -->
+  <div class="section-label">today's session</div>
+  <div class="checkin-grid">
+    <button class="checkin-btn" data-hours="0.5" onclick="logSession(this)">
+      <span class="btn-icon">⚡</span>
+      <span>Quick</span>
+      <span class="btn-sub">~30m</span>
+    </button>
+    <button class="checkin-btn" data-hours="1.5" onclick="logSession(this)">
+      <span class="btn-icon">💻</span>
+      <span>Focused</span>
+      <span class="btn-sub">~1.5h</span>
+    </button>
+    <button class="checkin-btn" data-hours="3" onclick="logSession(this)">
+      <span class="btn-icon">🔥</span>
+      <span>Deep</span>
+      <span class="btn-sub">~3h</span>
+    </button>
+    <button class="checkin-btn" data-hours="5" onclick="logSession(this)">
+      <span class="btn-icon">🚀</span>
+      <span>Marathon</span>
+      <span class="btn-sub">5h+</span>
+    </button>
+  </div>
+
+  <!-- Calendar -->
+  <div class="section-label">last 14 days</div>
+  <div class="cal-grid" id="cal-grid"></div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <button class="reset-btn" onclick="confirmReset()">reset pet</button>
+    <div class="last-sync" id="last-sync"></div>
+  </div>
+</div>
+
+<!-- Drive modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Sync to Drive</h3>
+    <p id="modal-desc">Bytie uses the Anthropic API + Google Drive MCP to save your progress. Enter your Anthropic API key to enable cloud sync.</p>
+    <input class="modal-input" id="modal-key" type="password" placeholder="sk-ant-api03-..." />
+    <div id="modal-key-note" style="font-size:0.7rem;color:#6b7094;margin-top:-8px;margin-bottom:1rem;font-family:'Space Mono',monospace;">
+      Key stored in localStorage only, never transmitted elsewhere.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-confirm" onclick="confirmSync()">Sync ↑</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── Constants ── */
+const STAGES = [
+  { name:'Egg',      key:'egg',    xp:0,   msgs:['Feed me XP to hatch!','Patiently waiting...','Tap a session to grow!'] },
+  { name:'Hatchling',key:'baby',   xp:20,  msgs:["I hatched! Let's keep going!","Baby steps — keep the streak!","I feel the code awakening!"] },
+  { name:'Coder',    key:'coder',  xp:60,  msgs:['Getting stronger every day!','FastAPI or React today?',"You're building real habits!"] },
+  { name:'Dev',      key:'dev',    xp:130, msgs:['Streak bonus incoming! Keep it up.','Push more commits — I can feel it!','Getting serious. Love to see it.'] },
+  { name:'Senior',   key:'senior', xp:250, msgs:["Elite coder energy. Don't break the streak.",'Hours + consistency = Bytie grows.','Ship something today!'] },
+  { name:'Legend',   key:'legend', xp:420, msgs:['LEGEND. Benjamin, you are unstoppable.','Max evolution. The code is strong with you.','Bytie has ascended.'] },
+];
+
+const XPH = 8, STREAK_BONUS = 5;
+const GLOW_COLORS = {
+  egg:'rgba(124,111,205,0.18)', baby:'rgba(76,175,134,0.18)',
+  coder:'rgba(100,181,246,0.18)', dev:'rgba(232,168,56,0.18)',
+  senior:'rgba(129,199,132,0.18)', legend:'rgba(255,138,101,0.25)'
+};
+
+/* ── State ── */
+function defaultState() {
+  return { xp:0, hours:0, streak:0, history:[], lastCheckin:null, driveFileId:null };
+}
+function load() {
+  try { const s=localStorage.getItem('bytie3'); if(s) return JSON.parse(s); } catch(e){}
+  return defaultState();
+}
+function save(s) { try { localStorage.setItem('bytie3', JSON.stringify(s)); } catch(e){} }
+function loadKey() { try { return localStorage.getItem('bytie_akey')||''; } catch(e){ return ''; } }
+function saveKey(k) { try { localStorage.setItem('bytie_akey', k); } catch(e){} }
+
+let state = load();
+let pendingDir = null;
+
+/* ── Date helpers ── */
+function dk(offset=0) {
+  const d=new Date(); d.setDate(d.getDate()+offset);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+const todayKey = () => dk(0);
+const yesterdayKey = () => dk(-1);
+
+/* ── Stage ── */
+function stageIdx(xp) {
+  for(let i=STAGES.length-1;i>=0;i--) if(xp>=STAGES[i].xp) return i;
+  return 0;
+}
+function progress(xp) {
+  const i=stageIdx(xp), cur=STAGES[i].xp;
+  const next=i<STAGES.length-1?STAGES[i+1].xp:cur+100;
+  return { i, next, pct:Math.min(100,Math.round(((xp-cur)/(next-cur))*100)) };
+}
+
+/* ── Session log ── */
+function logSession(btn) {
+  const today=todayKey();
+  if(state.lastCheckin===today) {
+    showToast('Already checked in today. Come back tomorrow!');
+    return;
+  }
+  const h=parseFloat(btn.dataset.hours);
+  let xp=Math.round(h*XPH);
+  let newStreak=state.streak;
+  if(state.lastCheckin===yesterdayKey()) newStreak++;
+  else newStreak=1;
+  if(newStreak>=3) xp+=STREAK_BONUS;
+  state.xp+=xp; state.hours=Math.round((state.hours+h)*10)/10;
+  state.streak=newStreak; state.lastCheckin=today;
+  if(!state.history.includes(today)) state.history.push(today);
+  save(state);
+  document.querySelectorAll('.checkin-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const bonusMsg=newStreak>=3?` (+${STREAK_BONUS} streak bonus!)`:'';
+  document.getElementById('pet-msg').textContent=`"+${xp} XP earned${bonusMsg}"`;
+  setSyncStatus('local','unsaved changes — sync to drive ↑');
+  updateUI();
+}
+
+/* ── UI update ── */
+function updateUI() {
+  document.getElementById('stat-xp').textContent=state.xp;
+  document.getElementById('stat-streak').textContent=state.streak;
+  document.getElementById('stat-hours').textContent=state.hours;
+  const {i,next,pct}=progress(state.xp);
+  const stage=STAGES[i];
+  document.getElementById('xp-fill').style.width=pct+'%';
+  document.getElementById('xp-left').textContent=`Level ${i+1} — ${stage.name}`;
+  document.getElementById('xp-right').textContent=`${state.xp} / ${next} XP`;
+  const pill=document.getElementById('stage-pill');
+  pill.textContent=stage.name; pill.className='stage-pill '+stage.key;
+  document.getElementById('pet-glow').style.background=GLOW_COLORS[stage.key];
+  const today=todayKey();
+  const checkedIn=state.lastCheckin===today;
+  document.querySelectorAll('.checkin-btn').forEach(b=>{
+    b.classList.toggle('disabled', checkedIn);
+  });
+  renderCal();
+}
+
+function renderCal() {
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  const todK=todayKey();
+  for(let i=13;i>=0;i--) {
+    const key=dk(-i);
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const el=document.createElement('div');
+    el.className='cal-day'+(state.history.includes(key)?' done':'')+(key===todK?' today':'');
+    el.textContent=d.getDate();
+    grid.appendChild(el);
+  }
+}
+
+/* ── Pet drawing ── */
+const C = (id) => document.getElementById(id).getContext('2d');
+
+function drawPet(idx, pct) {
+  const canvas=document.getElementById('pet-canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const bob=Math.sin(Date.now()/900*1.8)*5;
+  ctx.save(); ctx.translate(170,115+bob);
+  [drawEgg,drawBaby,drawCoder,drawDev,drawSenior,drawLegend][idx](ctx,pct);
+  ctx.restore();
+}
+
+function eye(ctx,x,y,r,pupilR,fill='#0d0f14'){
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle='#e8eaf2'; ctx.fill();
+  ctx.beginPath(); ctx.arc(x+1,y+1,pupilR,0,Math.PI*2);
+  ctx.fillStyle=fill; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-pupilR*0.4,y-pupilR*0.4,pupilR*0.35,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.fill();
+}
+
+function smile(ctx,y,w,col){
+  ctx.beginPath(); ctx.arc(0,y,w,0,Math.PI);
+  ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.stroke();
+}
+
+function drawEgg(ctx,pct){
+  ctx.beginPath(); ctx.ellipse(0,0,42,52,0,0,Math.PI*2);
+  ctx.fillStyle='#1a1d26'; ctx.fill();
+  ctx.strokeStyle='#534AB7'; ctx.lineWidth=1.5; ctx.stroke();
+  if(pct>15){
+    ctx.beginPath(); ctx.moveTo(-18,-12); ctx.lineTo(-6,6); ctx.lineTo(10,-22);
+    ctx.strokeStyle='#a599e9'; ctx.lineWidth=2.5; ctx.stroke();
+  }
+  ctx.fillStyle='#6b7094'; ctx.font='12px Space Mono,monospace';
+  ctx.textAlign='center'; ctx.fillText('zz',0,72);
+}
+
+function drawBaby(ctx){
+  ctx.beginPath(); ctx.ellipse(0,5,36,30,0,0,Math.PI*2);
+  ctx.fillStyle='#0d4f36'; ctx.fill();
+  ctx.strokeStyle='#4caf86'; ctx.lineWidth=1.5; ctx.stroke();
+  eye(ctx,-11,-2,7,3.5,'#0d4f36');
+  eye(ctx,11,-2,7,3.5,'#0d4f36');
+  smile(ctx,10,10,'#4caf86');
+  ctx.fillStyle='#4caf86'; ctx.font='10px DM Sans,sans-serif';
+  ctx.textAlign='center'; ctx.fillText('hi!',0,52);
+}
+
+function drawCoder(ctx){
+  ctx.beginPath(); ctx.ellipse(0,5,40,33,0,0,Math.PI*2);
+  ctx.fillStyle='#0c2744'; ctx.fill();
+  ctx.strokeStyle='#378add'; ctx.lineWidth=1.5; ctx.stroke();
+  eye(ctx,-12,-4,7.5,4,'#0c2744');
+  eye(ctx,12,-4,7.5,4,'#0c2744');
+  smile(ctx,12,11,'#378add');
+  // arms
+  ctx.beginPath(); ctx.moveTo(-40,8); ctx.quadraticCurveTo(-50,-5,-42,-12);
+  ctx.strokeStyle='#185FA5'; ctx.lineWidth=3; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(40,8); ctx.quadraticCurveTo(50,-5,42,-12);
+  ctx.stroke();
+  ctx.fillStyle='#378add'; ctx.font='13px Space Mono,monospace';
+  ctx.textAlign='center'; ctx.fillText('</>',0,-28);
+}
+
+function drawDev(ctx){
+  ctx.beginPath(); ctx.ellipse(0,5,44,37,0,0,Math.PI*2);
+  ctx.fillStyle='#3d2200'; ctx.fill();
+  ctx.strokeStyle='#e8a838'; ctx.lineWidth=1.5; ctx.stroke();
+  eye(ctx,-13,-5,8,4.5,'#3d2200');
+  eye(ctx,13,-5,8,4.5,'#3d2200');
+  smile(ctx,13,13,'#e8a838');
+  ctx.beginPath(); ctx.moveTo(-50,6); ctx.lineTo(-42,-10); ctx.lineTo(-30,6);
+  ctx.strokeStyle='#BA7517'; ctx.lineWidth=3; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(50,6); ctx.lineTo(42,-10); ctx.lineTo(30,6);
+  ctx.stroke();
+  ctx.fillStyle='#e8a838'; ctx.font='14px Space Mono,monospace';
+  ctx.textAlign='center'; ctx.fillText('{ }',0,-30);
+  // glasses
+  ctx.strokeStyle='#e8a838'; ctx.lineWidth=1.5;
+  ctx.strokeRect(-22,-12,14,9); ctx.strokeRect(8,-12,14,9);
+  ctx.beginPath(); ctx.moveTo(-8,-7); ctx.lineTo(8,-7); ctx.stroke();
+}
+
+function drawSenior(ctx){
+  // orbit particles
+  for(let i=0;i<5;i++){
+    const a=(i/5)*Math.PI*2+(Date.now()/2000);
+    const ox=Math.cos(a)*68, oy=Math.sin(a)*55;
+    ctx.beginPath(); ctx.arc(ox,oy,5,0,Math.PI*2);
+    ctx.fillStyle='rgba(129,199,132,0.5)'; ctx.fill();
+  }
+  ctx.beginPath(); ctx.ellipse(0,5,48,40,0,0,Math.PI*2);
+  ctx.fillStyle='#1a2e0d'; ctx.fill();
+  ctx.strokeStyle='#4caf86'; ctx.lineWidth=1.5; ctx.stroke();
+  eye(ctx,-14,-6,9,5,'#1a2e0d');
+  eye(ctx,14,-6,9,5,'#1a2e0d');
+  smile(ctx,14,14,'#4caf86');
+  ctx.beginPath(); ctx.moveTo(-56,4); ctx.lineTo(-44,-13); ctx.lineTo(-30,4);
+  ctx.strokeStyle='#3B6D11'; ctx.lineWidth=3; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(56,4); ctx.lineTo(44,-13); ctx.lineTo(30,4);
+  ctx.stroke();
+}
+
+function drawLegend(ctx){
+  // aura ring
+  const t=Date.now()/1000;
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2+t*0.5;
+    const r=75+Math.sin(t*2+i)*5;
+    ctx.beginPath(); ctx.arc(Math.cos(a)*r,Math.sin(a)*r,6,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,138,101,${0.3+0.2*Math.sin(t+i)})`; ctx.fill();
+  }
+  ctx.beginPath(); ctx.ellipse(0,5,52,44,0,0,Math.PI*2);
+  ctx.fillStyle='#3d1205'; ctx.fill();
+  ctx.strokeStyle='#ff8a65'; ctx.lineWidth=2; ctx.stroke();
+  eye(ctx,-15,-7,10,5.5,'#3d1205');
+  eye(ctx,15,-7,10,5.5,'#3d1205');
+  // big smile
+  ctx.beginPath(); ctx.arc(0,15,17,0,Math.PI);
+  ctx.strokeStyle='#ff8a65'; ctx.lineWidth=3; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-62,4); ctx.lineTo(-50,-16); ctx.lineTo(-32,4);
+  ctx.strokeStyle='#D85A30'; ctx.lineWidth=3.5; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(62,4); ctx.lineTo(50,-16); ctx.lineTo(32,4);
+  ctx.stroke();
+  ctx.fillStyle='#ff8a65'; ctx.font='bold 20px Space Mono,monospace';
+  ctx.textAlign='center'; ctx.fillText('★',0,-40);
+  ctx.font='11px Space Mono,monospace';
+  ctx.fillStyle='rgba(255,138,101,0.6)'; ctx.fillText('LEGEND',0,-60);
+}
+
+function animate() {
+  const {i,pct}=progress(state.xp);
+  drawPet(i,pct);
+  requestAnimationFrame(animate);
+}
+
+/* ── Sync status ── */
+function setSyncStatus(status, text) {
+  document.getElementById('sync-dot').className='sync-dot '+status;
+  document.getElementById('sync-text').textContent=text;
+}
+
+/* ── Drive sync via Anthropic API ── */
+const DRIVE_FNAME = 'bytie_save.json';
+
+async function driveCall(apiKey, prompt) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'x-api-key':apiKey, 'anthropic-version':'2023-06-01' },
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      system:'You are a Google Drive file assistant. Respond ONLY with a raw JSON object — no markdown, no explanation, no code fences.',
+      messages:[{role:'user',content:prompt}],
+      mcp_servers:[{ type:'url', url:'https://drivemcp.googleapis.com/mcp/v1', name:'gdrive' }]
+    })
+  });
+  const data = await r.json();
+  const text = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+  try { return JSON.parse(text.replace(/```json|```/g,'').trim()); }
+  catch(e) { return null; }
+}
+
+async function syncUp(apiKey) {
+  setSyncStatus('syncing','saving to drive...');
+  document.getElementById('btn-up').disabled=true;
+  document.getElementById('btn-down').disabled=true;
+  try {
+    const content = JSON.stringify(state);
+    let prompt;
+    if(state.driveFileId) {
+      prompt=`Update Google Drive file with id "${state.driveFileId}" setting its plain text content to: ${content}. Return JSON {"success":true,"fileId":"${state.driveFileId}"}`;
+    } else {
+      prompt=`Search Google Drive for a file named exactly "${DRIVE_FNAME}". If found, update its content with: ${content} and return {"found":true,"fileId":"<id>"}. If not found, create it with content: ${content} and return {"created":true,"fileId":"<id>"}`;
+    }
+    const res = await driveCall(apiKey, prompt);
+    if(res && res.fileId) {
+      state.driveFileId = res.fileId;
+      save(state);
+      const now = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      setSyncStatus('synced','synced to drive');
+      document.getElementById('last-sync').textContent=`synced ${now}`;
+      showToast('Saved to Google Drive!');
+    } else {
+      throw new Error('no fileId');
+    }
+  } catch(e) {
+    setSyncStatus('error','sync failed — check key');
+    showToast('Drive sync failed. Check your API key.');
+  }
+  document.getElementById('btn-up').disabled=false;
+  document.getElementById('btn-down').disabled=false;
+}
+
+async function syncDown(apiKey) {
+  setSyncStatus('syncing','loading from drive...');
+  document.getElementById('btn-up').disabled=true;
+  document.getElementById('btn-down').disabled=true;
+  try {
+    const prompt=`Search Google Drive for a file named exactly "${DRIVE_FNAME}". If found, read its full text content and return JSON: {"found":true,"content":"<file text>","fileId":"<id>"}. If not found return {"found":false}.`;
+    const res = await driveCall(apiKey, prompt);
+    if(res && res.found && res.content) {
+      const loaded = JSON.parse(res.content);
+      state = { ...defaultState(), ...loaded };
+      if(res.fileId) state.driveFileId = res.fileId;
+      save(state);
+      updateUI();
+      setSyncStatus('synced','loaded from drive');
+      document.getElementById('pet-msg').textContent='"Welcome back! Your progress has been restored."';
+      showToast('Progress loaded from Google Drive!');
+    } else {
+      setSyncStatus('local','no drive save found');
+      showToast('No save file found in Drive.');
+    }
+  } catch(e) {
+    setSyncStatus('error','load failed');
+    showToast('Could not load from Drive.');
+  }
+  document.getElementById('btn-up').disabled=false;
+  document.getElementById('btn-down').disabled=false;
+}
+
+/* ── Modal ── */
+function openSyncModal(dir) {
+  pendingDir = dir;
+  document.getElementById('modal-title').textContent = dir==='up' ? 'Sync to Drive ↑' : 'Load from Drive ↓';
+  document.getElementById('modal-confirm').textContent = dir==='up' ? 'Save ↑' : 'Load ↓';
+  document.getElementById('modal-key').value = loadKey();
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  pendingDir = null;
+}
+
+function confirmSync() {
+  const key = document.getElementById('modal-key').value.trim();
+  if(!key) { showToast('Enter your Anthropic API key first.'); return; }
+  saveKey(key);
+  closeModal();
+  if(pendingDir==='up') syncUp(key);
+  else syncDown(key);
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if(e.target===this) closeModal();
+});
+
+/* ── Reset ── */
+function confirmReset() {
+  if(!confirm('Reset Bytie? All local XP and streaks will be cleared.')) return;
+  const fid = state.driveFileId;
+  state = defaultState();
+  if(fid) state.driveFileId = fid;
+  save(state);
+  document.querySelectorAll('.checkin-btn').forEach(b=>b.classList.remove('active','disabled'));
+  document.getElementById('pet-msg').textContent='"Fresh start! Let\'s grow together."';
+  setSyncStatus('local','reset — sync to update drive');
+  document.getElementById('last-sync').textContent='';
+  updateUI();
+}
+
+/* ── Toast ── */
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ── Init ── */
+updateUI();
+if(state.xp>0) {
+  const stage=STAGES[stageIdx(state.xp)];
+  const msgs=stage.msgs;
+  document.getElementById('pet-msg').textContent=`"${msgs[Math.floor(Math.random()*msgs.length)]}"`;
+}
+if(state.driveFileId) setSyncStatus('synced','drive save linked');
+animate();
+</script>
+</body>
+</html>
